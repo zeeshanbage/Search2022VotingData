@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>मतदार शोध | Beed 198 BEED - Voter Search</title>
+    <meta name="description" content="Search voter rolls for Assembly Constituency 198 BEED, District Beed, Maharashtra 2002 Electoral Data">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Animated background blobs -->
+        <div class="bg-blob blob-1"></div>
+        <div class="bg-blob blob-2"></div>
+        <div class="bg-blob blob-3"></div>
+
+        <header class="header">
+            <div class="header-content">
+                <div class="emblem">🗳️</div>
+                <div class="header-text">
+                    <h1>मतदार यादी शोध</h1>
+                    <p class="subtitle">198 बीड विधानसभा मतदार संघ | 2002 Electoral Roll</p>
+                </div>
+            </div>
+        </header>
+
+        <main class="main">
+            <section class="search-section">
+                <div class="search-container glass-card">
+                    <div class="search-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </div>
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="मतदाराचे नाव शोधा... (उदा. कुलकर्णी, देशमुख)"
+                        autocomplete="off"
+                        spellcheck="false"
+                    >
+                    <div class="search-shortcut" id="clearBtn" title="Clear search">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="status-bar">
+                    <div class="status-left">
+                        <span id="statusText" class="status-text">Loading data...</span>
+                    </div>
+                    <div class="status-right">
+                        <span id="totalCount" class="count-badge">—</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="results-section" id="resultsSection">
+                <div class="table-wrapper glass-card">
+                    <table id="resultsTable">
+                        <thead>
+                            <tr>
+                                <th class="col-yadi">यादी क्र.</th>
+                                <th class="col-sr">अ.क्र.</th>
+                                <th class="col-house">घर क्रमांक</th>
+                                <th class="col-name">मतदाराचे पुर्ण नाव</th>
+                                <th class="col-relation">नाते</th>
+                                <th class="col-relative">नातेवाईकाचे पुर्ण नाव</th>
+                                <th class="col-gender">लिंग</th>
+                                <th class="col-age">वय</th>
+                                <th class="col-id">ओळख पत्र क्रमांक</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsBody">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="load-more-container" id="loadMoreContainer" style="display:none;">
+                    <button class="load-more-btn" id="loadMoreBtn">आणखी पहा (Load More)</button>
+                </div>
+            </section>
+
+            <section class="empty-state" id="emptyState">
+                <div class="empty-icon">🔍</div>
+                <p class="empty-title">मतदाराचे नाव टाइप करा</p>
+                <p class="empty-subtitle">Type a voter's name to search across all 77 parts (142–218)</p>
+            </section>
+
+            <section class="no-results" id="noResults" style="display:none;">
+                <div class="empty-icon">😕</div>
+                <p class="empty-title">कोणतेही परिणाम सापडले नाहीत</p>
+                <p class="empty-subtitle">Try a different name or shorter search term</p>
+            </section>
+
+            <section class="loading-overlay" id="loadingOverlay">
+                <div class="spinner"></div>
+                <p>91,000+ मतदार डेटा लोड होत आहे...</p>
+                <p class="loading-sub">Loading voter data, please wait...</p>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>Data source: <a href="https://ceoelection.maharashtra.gov.in/2002/2002rolldata.aspx" target="_blank">CEO Election Maharashtra</a> | District: Beed | AC: 198 BEED</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Downloaded PDFs (large, not needed for the website)
+Beed_198/
+
+# Temp/scratch files
+page_curl.html
+page_ps.html
+page_pup.html
+pdf_analysis.txt
+verify.txt
+page.html
+
+# Scripts used during development (not needed for website)
+fetch_test.js
+fetch_ps.ps1
+analyze_pdf.js
+inspect.js
+downloader.js
+
+# OS files
+Thumbs.db
+.DS_Store
