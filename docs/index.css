@@ -345,7 +345,19 @@ tbody td {
 td.yadi-cell {
     font-family: 'Inter', monospace;
     font-weight: 600;
+}
+
+.pdf-link {
     color: var(--yadi-badge);
+    text-decoration: none;
+    transition: color 0.2s ease;
+    font-weight: 600;
+    font-size: 0.78rem;
+}
+
+.pdf-link:hover {
+    color: var(--accent);
+    text-decoration: underline;
 }
 
 td.name-cell {

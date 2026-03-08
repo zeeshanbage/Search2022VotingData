@@ -168,6 +168,8 @@ async function extractPdf(filePath) {
     const doc = await pdfjsLib.getDocument({ data: dataBuffer }).promise;
     const basename = path.basename(filePath, '.pdf');
     const yadi = basename.split('-')[0];
+    const pdfName = basename; // e.g. "163-Beed"
+    const pdfLink = `https://ceoelection.maharashtra.gov.in/2002/2002/PDFs/Beed/198%20BEED/${encodeURIComponent(basename)}.pdf`;
     const records = [];
 
     for (let pageNum = 2; pageNum <= doc.numPages; pageNum++) {
@@ -215,7 +217,7 @@ async function extractPdf(filePath) {
 
             // Only add if we have meaningful data
             if (record.name && record.name.length > 1 && record.sr) {
-                records.push({ yadi, ...record });
+                records.push({ yadi, pdfName, pdfLink, ...record });
             }
         }
     }

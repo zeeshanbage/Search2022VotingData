@@ -91,7 +91,7 @@
             const r = currentResults[i];
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td class="yadi-cell">${escapeHtml(r.yadi)}</td>
+                <td class="yadi-cell"><a href="${escapeHtml(r.pdfLink || '')}" target="_blank" class="pdf-link" title="View PDF">${escapeHtml(r.pdfName || r.yadi)}</a></td>
                 <td class="sr-cell">${escapeHtml(r.sr)}</td>
                 <td>${escapeHtml(r.house)}</td>
                 <td class="name-cell">${highlightMatch(r.name, query)}</td>
