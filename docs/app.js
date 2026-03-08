@@ -14,6 +14,7 @@
     const DEBOUNCE_MS = 250;
 
     // DOM refs
+    const acSelect = document.getElementById('acSelect');
     const searchInput = document.getElementById('searchInput');
     const clearBtn = document.getElementById('clearBtn');
     const statusText = document.getElementById('statusText');
@@ -27,18 +28,49 @@
     const loadMoreBtn = document.getElementById('loadMoreBtn');
 
     // ─── Data Loading ──────────────────────────────────────
-    async function loadData() {
+    async function loadData(acCode) {
+        // Reset state
+        allData = [];
+        currentResults = [];
+        searchInput.value = '';
+        clearBtn.classList.remove('visible');
+        resultsSection.classList.remove('active');
+        emptyState.style.display = 'none';
+        noResults.style.display = 'none';
+
+        loadingOverlay.querySelector('p').textContent = `Loading ${acCode} voter data...`;
+        loadingOverlay.classList.remove('hidden');
+
         try {
-            const response = await fetch('voter_data.json');
-            if (!response.ok) throw new Error('Failed to load data');
+            // Using logic: if acCode is empty string it would be voter_data_.json, but default is 198
+            // The file should be voter_data_198.json (new format) or fallback to voter_data.json
+            // Let's try the new specific format first
+            let url = `voter_data_${acCode}.json`;
+            let response = await fetch(url);
+
+            // Temporary fallback for backwards compatibility while generating new files
+            if (!response.ok && acCode === '198') {
+                response = await fetch('voter_data.json');
+            }
+
+            if (!response.ok) throw new Error(`HTTP ${response.status} - Data not found for AC ${acCode}`);
+
             allData = await response.json();
             totalCount.textContent = `${allData.length.toLocaleString()} records`;
-            statusText.textContent = `Data loaded — ${allData.length.toLocaleString()} voter records across 77 parts`;
+            statusText.textContent = `AC ${acCode} loaded — ${allData.length.toLocaleString()} voter records`;
+
             loadingOverlay.classList.add('hidden');
+            emptyState.style.display = '';
+            emptyState.classList.remove('hidden');
             searchInput.focus();
+
         } catch (err) {
-            statusText.textContent = 'Error loading data. Ensure voter_data.json is in the same folder.';
+            statusText.textContent = `Error: Data for AC ${acCode} not generated yet.`;
+            totalCount.textContent = '—';
             loadingOverlay.classList.add('hidden');
+            emptyState.style.display = '';
+            emptyState.querySelector('.empty-title').textContent = 'माहिती उपलब्ध नाही (Data Not Available)';
+            emptyState.querySelector('.empty-subtitle').textContent = `Voter data for AC ${acCode} is currently being processed. Please try another.`;
             console.error('Data load error:', err);
         }
     }
@@ -122,8 +154,16 @@
         emptyState.style.display = '';
         emptyState.classList.remove('hidden');
         statusText.textContent = allData.length
-            ? `Data loaded — ${allData.length.toLocaleString()} voter records across 77 parts`
-            : 'Loading data...';
+            ? `AC ${acSelect.value} loaded — ${allData.length.toLocaleString()} voter records`
+            : `Data for AC ${acSelect.value} not available.`;
+
+        if (allData.length === 0) {
+            emptyState.querySelector('.empty-title').textContent = 'माहिती उपलब्ध नाही (Data Not Available)';
+            emptyState.querySelector('.empty-subtitle').textContent = `Voter data for AC ${acSelect.value} is currently being processed.`;
+        } else {
+            emptyState.querySelector('.empty-title').textContent = 'मतदाराचे नाव टाइप करा';
+            emptyState.querySelector('.empty-subtitle').textContent = `Type a voter's name to search in AC ${acSelect.value}`;
+        }
         totalCount.textContent = allData.length ? `${allData.length.toLocaleString()} records` : '—';
     }
 
@@ -200,7 +240,11 @@
         }
     });
 
+    acSelect.addEventListener('change', (e) => {
+        loadData(e.target.value);
+    });
+
     // ─── Init ──────────────────────────────────────────────
-    loadData();
+    loadData(acSelect.value);
 
 })();

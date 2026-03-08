@@ -2,7 +2,18 @@
 node_modules/
 
 # Downloaded PDFs (large, not needed for the website)
+196_GEORAI/
+197_MAJALGAON/
+198_Beed/
+199_Ashti/
+200_CHOUSALA/
+201_KAIJ/
+202_RENAPUR/
 Beed_198/
+
+# Log files
+*_log.txt
+column_analysis.txt
 
 # Temp/scratch files
 page_curl.html
