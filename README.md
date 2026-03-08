@@ -1,6 +1,11 @@
-# SearchSIRMapping — Voter Roll Search
+# SearchSIRMapping — Beed District Voter Search
 
-A client-side voter roll search website for **198 BEED Assembly Constituency**, District Beed, Maharashtra (2002 Electoral Roll Data).
+A client-side voter roll search website for **all 7 Assembly Constituencies** of District Beed, Maharashtra (2002 Electoral Roll Data). 
+[196 GEORAI, 197 MAJALGAON, 198 BEED, 199 ASHTI, 200 CHOUSALA, 201 KAIJ, 202 RENAPUR].
+
+## 🚀 Deploy to Vercel
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fzeeshanbage%2FSearch2022VotingData)
 
 ## 🔍 Live Demo
 
