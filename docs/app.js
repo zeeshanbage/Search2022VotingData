@@ -84,25 +84,44 @@
             return;
         }
 
-        // Search in name and relative fields
         const queryLower = query.toLowerCase();
-        currentResults = allData.filter(r =>
-            r.name.includes(query) ||
-            r.relative.includes(query) ||
-            r.name.toLowerCase().includes(queryLower) ||
-            r.relative.toLowerCase().includes(queryLower)
-        );
+
+        // Detect if query contains english characters
+        const isEnglish = /[a-zA-Z]/.test(queryLower);
+
+        if (isEnglish) {
+            // For English queries, clean the input the same way we cleaned the dataset
+            let cleanQ = queryLower.replace(/m(?=[pbh])/g, 'm').replace(/m/g, 'n');
+            cleanQ = cleanQ.replace(/aa/g, 'a').replace(/ii/g, 'i').replace(/uu/g, 'u').replace(/kshar/g, 'kshar');
+            cleanQ = cleanQ.replace(/[^a-z0-9 ]/g, ''); // alphanumeric and space only
+
+            currentResults = allData.filter(r => {
+                if (!r.nameEn && !r.relativeEn) return false;
+
+                const matchName = r.nameEn && r.nameEn.includes(cleanQ);
+                const matchRel = r.relativeEn && r.relativeEn.includes(cleanQ);
+                return matchName || matchRel;
+            });
+        } else {
+            // Standard Devanagari Search
+            currentResults = allData.filter(r =>
+                r.name.includes(query) ||
+                r.relative.includes(query) ||
+                r.name.toLowerCase().includes(queryLower) ||
+                r.relative.toLowerCase().includes(queryLower)
+            );
+        }
 
         displayedCount = 0;
 
         if (currentResults.length === 0) {
             showNoResults();
         } else {
-            showResults(query);
+            showResults(query, isEnglish);
         }
     }
 
-    function showResults(query) {
+    function showResults(query, isEnglish) {
         emptyState.style.display = 'none';
         noResults.style.display = 'none';
         resultsSection.classList.add('active');
@@ -112,23 +131,39 @@
 
         resultsBody.innerHTML = '';
         displayedCount = 0;
-        loadMoreResults(query);
+        loadMoreResults(query, isEnglish);
     }
 
-    function loadMoreResults(query) {
+    function loadMoreResults(query, isEnglish) {
         const end = Math.min(displayedCount + PAGE_SIZE, currentResults.length);
         const fragment = document.createDocumentFragment();
+
+        let cleanQ = query;
+        if (isEnglish) {
+            cleanQ = query.toLowerCase().replace(/m(?=[pbh])/g, 'm').replace(/m/g, 'n');
+            cleanQ = cleanQ.replace(/aa/g, 'a').replace(/ii/g, 'i').replace(/uu/g, 'u').replace(/kshar/g, 'kshar');
+            cleanQ = cleanQ.replace(/[^a-z0-9 ]/g, '');
+        }
 
         for (let i = displayedCount; i < end; i++) {
             const r = currentResults[i];
             const tr = document.createElement('tr');
+
+            let nameDisplay = isEnglish ?
+                `${escapeHtml(r.name)} <br><small style="color:var(--text-muted)">${highlightMatch(r.nameEn || '', cleanQ)}</small>` :
+                highlightMatch(r.name, query);
+
+            let relativeDisplay = isEnglish ?
+                `${escapeHtml(r.relative)} <br><small style="color:var(--text-muted)">${highlightMatch(r.relativeEn || '', cleanQ)}</small>` :
+                highlightMatch(r.relative, query);
+
             tr.innerHTML = `
                 <td class="yadi-cell"><a href="${escapeHtml(r.pdfLink || '')}" target="_blank" class="pdf-link" title="View PDF">${escapeHtml(r.pdfName || r.yadi)}</a></td>
                 <td class="sr-cell">${escapeHtml(r.sr)}</td>
                 <td>${escapeHtml(r.house)}</td>
-                <td class="name-cell">${highlightMatch(r.name, query)}</td>
+                <td class="name-cell">${nameDisplay}</td>
                 <td>${escapeHtml(r.relation)}</td>
-                <td class="relative-cell">${highlightMatch(r.relative, query)}</td>
+                <td class="relative-cell">${relativeDisplay}</td>
                 <td>${escapeHtml(r.gender)}</td>
                 <td class="age-cell">${escapeHtml(r.age)}</td>
                 <td class="id-cell">${escapeHtml(r.idCard)}</td>
@@ -222,7 +257,8 @@
 
     loadMoreBtn.addEventListener('click', () => {
         const query = searchInput.value.trim();
-        loadMoreResults(query);
+        const isEnglish = /[a-zA-Z]/.test(query.toLowerCase());
+        loadMoreResults(query, isEnglish);
     });
 
     // Keyboard shortcut: Escape to clear
