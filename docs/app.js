@@ -75,6 +75,36 @@
         }
     }
 
+    // ─── Skeleton normalizer (mirrors add_roman_names.js logic) ───────────
+    // Applied to BOTH stored nameEn/relativeEn AND the typed query for fuzzy matching.
+    // virsat = virasata = virsaat → skeleton "virst"
+    // kulkarni = kulakarni = kulkrni → skeleton "kulkrni"
+    function toSkeleton(s) {
+        if (!s) return '';
+        s = s.toLowerCase();
+        // Collapse aspirates
+        s = s.replace(/sh/g, 's');
+        s = s.replace(/bh/g, 'b');
+        s = s.replace(/ph/g, 'p');
+        s = s.replace(/kh/g, 'k');
+        s = s.replace(/gh/g, 'g');
+        s = s.replace(/th/g, 't');
+        s = s.replace(/dh/g, 'd');
+        s = s.replace(/ch/g, 'c');
+        s = s.replace(/jh/g, 'j');
+        s = s.replace(/lh/g, 'l');
+        s = s.replace(/nh/g, 'n');
+        // Normalize v/w (Waman = Vaman)
+        s = s.replace(/w/g, 'v');
+        // Strip ALL 'a' — the inherent schwa: biggest source of spelling variation
+        s = s.replace(/a/g, '');
+        // Collapse duplicate consonants
+        s = s.replace(/(.)\1+/g, '$1');
+        // Keep only letters
+        s = s.replace(/[^b-z0-9 ]/g, '');
+        return s;
+    }
+
     // ─── Search ────────────────────────────────────────────
     function performSearch(query) {
         query = query.trim();
@@ -84,26 +114,22 @@
             return;
         }
 
-        const queryLower = query.toLowerCase();
-
-        // Detect if query contains english characters
-        const isEnglish = /[a-zA-Z]/.test(queryLower);
+        const isEnglish = /[a-zA-Z]/.test(query);
 
         if (isEnglish) {
-            // For English queries, clean the input the same way we cleaned the dataset
-            let cleanQ = queryLower.replace(/m(?=[pbh])/g, 'm').replace(/m/g, 'n');
-            cleanQ = cleanQ.replace(/aa/g, 'a').replace(/ii/g, 'i').replace(/uu/g, 'u').replace(/kshar/g, 'kshar');
-            cleanQ = cleanQ.replace(/[^a-z0-9 ]/g, ''); // alphanumeric and space only
+            // Normalize the typed query to skeleton
+            const normQ = toSkeleton(query);
 
             currentResults = allData.filter(r => {
                 if (!r.nameEn && !r.relativeEn) return false;
-
-                const matchName = r.nameEn && r.nameEn.includes(cleanQ);
-                const matchRel = r.relativeEn && r.relativeEn.includes(cleanQ);
+                // The stored nameEn/relativeEn is already a skeleton — normalize again in case
+                const matchName = r.nameEn && toSkeleton(r.nameEn).includes(normQ);
+                const matchRel  = r.relativeEn && toSkeleton(r.relativeEn).includes(normQ);
                 return matchName || matchRel;
             });
         } else {
-            // Standard Devanagari Search
+            // Standard Devanagari search
+            const queryLower = query.toLowerCase();
             currentResults = allData.filter(r =>
                 r.name.includes(query) ||
                 r.relative.includes(query) ||
@@ -113,12 +139,8 @@
         }
 
         displayedCount = 0;
-
-        if (currentResults.length === 0) {
-            showNoResults();
-        } else {
-            showResults(query, isEnglish);
-        }
+        if (currentResults.length === 0) showNoResults();
+        else showResults(query, isEnglish);
     }
 
     function showResults(query, isEnglish) {
@@ -126,7 +148,8 @@
         noResults.style.display = 'none';
         resultsSection.classList.add('active');
 
-        statusText.textContent = `"${query}" — ${currentResults.length.toLocaleString()} result${currentResults.length !== 1 ? 's' : ''} found`;
+        const hint = isEnglish ? ' (Roman search)' : '';
+        statusText.textContent = `"${query}"${hint} — ${currentResults.length.toLocaleString()} result${currentResults.length !== 1 ? 's' : ''} found`;
         totalCount.textContent = `${currentResults.length.toLocaleString()} matches`;
 
         resultsBody.innerHTML = '';
@@ -138,24 +161,13 @@
         const end = Math.min(displayedCount + PAGE_SIZE, currentResults.length);
         const fragment = document.createDocumentFragment();
 
-        let cleanQ = query;
-        if (isEnglish) {
-            cleanQ = query.toLowerCase().replace(/m(?=[pbh])/g, 'm').replace(/m/g, 'n');
-            cleanQ = cleanQ.replace(/aa/g, 'a').replace(/ii/g, 'i').replace(/uu/g, 'u').replace(/kshar/g, 'kshar');
-            cleanQ = cleanQ.replace(/[^a-z0-9 ]/g, '');
-        }
-
         for (let i = displayedCount; i < end; i++) {
             const r = currentResults[i];
             const tr = document.createElement('tr');
 
-            let nameDisplay = isEnglish ?
-                `${escapeHtml(r.name)} <br><small style="color:var(--text-muted)">${highlightMatch(r.nameEn || '', cleanQ)}</small>` :
-                highlightMatch(r.name, query);
-
-            let relativeDisplay = isEnglish ?
-                `${escapeHtml(r.relative)} <br><small style="color:var(--text-muted)">${highlightMatch(r.relativeEn || '', cleanQ)}</small>` :
-                highlightMatch(r.relative, query);
+            // Always display Devanagari — clean, no ugly Latin subtitles
+            const nameDisplay     = highlightMatch(r.name,     isEnglish ? '' : query);
+            const relativeDisplay = highlightMatch(r.relative, isEnglish ? '' : query);
 
             tr.innerHTML = `
                 <td class="yadi-cell"><a href="${escapeHtml(r.pdfLink || '')}" target="_blank" class="pdf-link" title="View PDF">${escapeHtml(r.pdfName || r.yadi)}</a></td>
